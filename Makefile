@@ -48,6 +48,13 @@ clean:
 	rm -f $(OBJ)
 	rm -f $(EXE)
 	rm -rf docs
+
+install:
+	cp $(ARVINDS_TOOLS_LIB) $(LIB_INSTALL_DESTINATION)
+	cp *.h $(INC_INSTALL_DESTINATION)
+
+LIB_INSTALL_DESTINATION = /usr/local/lib/
+INC_INSTALL_DESTINATION = /usr/local/include/
 	
 TAR_FILE_NAME = `date +'%Y%m%d_%H%M%S_'`$(TOPLEVEL_FOLDER).tar.gz
 
