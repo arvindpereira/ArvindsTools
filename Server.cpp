@@ -157,6 +157,7 @@ map<int, ClientInfo> TCP_Server::getClientTable() {
  */
 void TCP_Server::remove_client(int fd)
 {
+	cout<<"Removing Client["<<fd<<"]"<<endl;
 	close(fd);
 	FD_CLR(fd,&readfds);
 	--numClientConnected;

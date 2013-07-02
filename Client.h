@@ -195,15 +195,17 @@ public:
 	    hints.ai_family = AF_UNSPEC;
 	    hints.ai_socktype = SOCK_STREAM;
 	    terminateReader = false;
-	    int res=pthread_create(&reader,NULL,read_thread, this );
-	    if(res!=0)
-	    { perror("Read thread creation failed."); exit(EXIT_FAILURE); }
-	    res = pthread_mutex_init( &readMutex, NULL );
-	    if (res!=0) { perror("Mutex init failed."); exit(EXIT_FAILURE); }
+	    sockfd = -1;
 	}
 
 	bool CreateSocket( string ip_addr, string port ) {
-	    if ((rv = getaddrinfo((char*)ip_addr.c_str(), (char*)port.c_str(), &hints, &servinfo)) != 0) {
+		int res=pthread_create(&reader,NULL,read_thread, this );
+		if(res!=0)
+		{ perror("Read thread creation failed."); exit(EXIT_FAILURE); }
+		res = pthread_mutex_init( &readMutex, NULL );
+		if (res!=0) { perror("Mutex init failed."); exit(EXIT_FAILURE); }
+
+		if ((rv = getaddrinfo((char*)ip_addr.c_str(), (char*)port.c_str(), &hints, &servinfo)) != 0) {
 	        cerr<<"getaddrinfo: "<<gai_strerror(rv)<<endl;
 	        return false;
 	    }
@@ -244,7 +246,7 @@ public:
 	{
 		TCP_Client *clientInstance=reinterpret_cast<TCP_Client*>(arg);
 
-
+		clientInstance->terminateReader = false;
 		while( !(clientInstance->terminateReader) )
 		{
 			usleep(10);
@@ -252,23 +254,9 @@ public:
 			struct timeval timeout; timeout.tv_sec=1; timeout.tv_usec=500000;
 			int result=select(FD_SETSIZE,&(clientInstance->testfds),(fd_set*)0,(fd_set*)0,&timeout);
 			if ( result<0 ) break;
-			for(int fd=0; fd<FD_SETSIZE; fd++)
-			{
-			  if( FD_ISSET(fd,&(clientInstance->testfds)) )
-			  {
-			  	  int nread = 0;
-				  ioctl(fd,FIONREAD,&nread);
-				  if(nread==0)
-				  {
-					clientInstance->CloseSocket();
-				  }
-				  else {
-					string data;
-					clientInstance->receive(data);
-					clientInstance->check_frame(data);
-				  }
-			   }
-			}
+			string data;
+			clientInstance->receive(data);
+			clientInstance->check_frame(data);
 		}
 		if(clientInstance->terminateReader)
 		  cerr<<"Client read thread is exiting..."<<endl;
@@ -299,11 +287,16 @@ public:
 	}
 
 	int CloseSocket() {
+		if ( sockfd > 0 ) {
+			cout<<"Closing socket...";
 			// shutdown the send half of the connection since no more data will be sent
-		terminateReader = true;
-		void *thread_result;
-		pthread_join( reader, &thread_result );
-		return close(sockfd);
+			terminateReader = true;
+			void *thread_result;
+			pthread_join( reader, &thread_result );
+			return close(sockfd);
+		}
+		else
+			return 0;
 	}
 
 
