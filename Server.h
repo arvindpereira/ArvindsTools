@@ -24,6 +24,7 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 
+#include <cstdlib>
 #include <iostream>
 #include <cstdio>
 #include <stdexcept>
