@@ -64,7 +64,7 @@ class SerialComm
 	void Read(char *, int &);
 
 	int  PeekAndRead(char *, int &);
-	int	 PeekAndRead(char *, int &, int);
+	int  PeekAndRead(char *, int &, int);
 	int  Peek();
 	int  Peek(int);
 
