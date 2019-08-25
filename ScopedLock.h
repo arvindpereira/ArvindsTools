@@ -49,6 +49,7 @@ namespace ArvindsTools {
 class ScopedMutexGuard {
 	pthread_mutex_t *mutexLock;
 
+    public:
 	ScopedMutexGuard( pthread_mutex_t& lock ) : mutexLock(&lock) {
 		pthread_mutex_lock( mutexLock );
 	}
